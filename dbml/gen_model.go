@@ -126,7 +126,7 @@ func genResultModelFields(cols []DBMLFuncElementColumn) []string {
 
 func csTypeToGoType(csType string, nullable bool) string {
 	switch csType {
-	case "System.Int32":
+	case "System.Byte", "System.Int32":
 		if nullable {
 			return "sql.NullInt64"
 		}
@@ -136,21 +136,27 @@ func csTypeToGoType(csType string, nullable bool) string {
 			return "sql.NullInt64"
 		}
 		return "int64"
-	case "System.Char", "System.String":
+	case "System.Char", "System.String", "System.Xml.Linq.XElement":
 		if nullable {
 			return "sql.NullString"
 		}
 		return "string"
+	case "System.Boolean":
+		if nullable {
+			return "sql.NullBool"
+		}
+		return "bool"
 	case "System.DateTime":
 		if nullable {
 			return "*time.Time"
 		}
 		return "time.Time"
-	case "System.Double":
+	case "System.Double", "System.Decimal":
 		if nullable {
 			return "sql.NullFloat64"
 		}
 		return "float64"
 	}
+
 	return ""
 }

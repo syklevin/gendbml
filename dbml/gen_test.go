@@ -3,12 +3,13 @@ package dbml
 import (
 	"encoding/xml"
 	"io/ioutil"
+	"os"
 	"testing"
 )
 
 func TestGenModel(t *testing.T) {
 
-	ba, err := ioutil.ReadFile("./KrcDB.dbml")
+	ba, err := ioutil.ReadFile("../fixtures/test.dbml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,12 +23,24 @@ func TestGenModel(t *testing.T) {
 
 	mg := NewModelGen(dbml, "data")
 
-	err = mg.GenModelFile("models.go")
+	f, err := os.Create("models.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	err = mg.GenModelFile(f)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = mg.GenFuncFile("funcs.go")
+	f2, err := os.Create("funcs.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f2.Close()
+
+	err = mg.GenFuncFile(f2)
 	if err != nil {
 		t.Fatal(err)
 	}

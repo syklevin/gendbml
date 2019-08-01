@@ -8,7 +8,7 @@ import (
 
 func TestDbmlUnmarshal(t *testing.T) {
 
-	ba, err := ioutil.ReadFile("./KrcDB.dbml")
+	ba, err := ioutil.ReadFile("../fixtures/test.dbml")
 	if err != nil {
 		t.Fatal(err)
 	}

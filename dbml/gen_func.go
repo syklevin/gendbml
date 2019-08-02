@@ -32,7 +32,7 @@ func buildFuncInfo(fn DBMLFunc) (*FuncInfo, error) {
 		for _, p := range fn.Parameters {
 			if p.Direction == "Out" || p.Direction == "InOut" {
 				fieldOut = p.Name
-				if strings.Index(p.Name, "p") == 0 {
+				if strings.Index(p.Name, "p") == 0 || strings.Index(p.Name, "w") == 0 {
 					fieldOut = p.Name[1:]
 				}
 				fieldOut = "out" + fieldOut

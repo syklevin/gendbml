@@ -13,7 +13,7 @@ import (
 )
 
 func die(v ...interface{}) {
-	fmt.Println(v)
+	fmt.Println(v...)
 	os.Exit(1)
 }
 

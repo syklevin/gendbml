@@ -35,7 +35,7 @@ import (
 
 var (
     _ = context.Background()
-    _ = sql.Named{}
+    _ = sql.LevelDefault
     _ = sqlx.DB{}
 )
 

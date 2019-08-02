@@ -53,3 +53,39 @@ func {{.Name}}(
 {{end}}
 
 `
+
+var TestFuncTmpl = `package {{.Pkg}}
+
+import (
+    "testing"
+    "context"
+    "github.com/jmoiron/sqlx"
+)
+
+var (
+    db_ *sqlx.DB = nil //change this!!
+)
+
+{{range .TestFuncs}}
+func Test{{.Name}}(t *testing.T){
+    {{range .Declares}}{{.}}
+    {{end}}
+    {{- range $j, $k := .Returns -}}
+        {{if $j}}, {{end}}{{$k}}
+    {{- end}} = {{.Name}}(
+    {{- range $i, $e := .Arguments -}}
+        {{if $i}}, {{end}}{{$e}}
+    {{- end}})
+    if err != nil {
+        t.Fatal(err)
+    }
+    {{ if eq (len .Returns) 2 }}
+    if rst == nil {
+        t.Fatal("rst should not be nil")
+    }
+    {{ end }}
+}
+{{end}}
+
+
+`

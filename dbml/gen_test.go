@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -23,7 +24,16 @@ func TestGenModel(t *testing.T) {
 
 	mg := NewModelGen(dbml, "data")
 
-	f, err := os.Create("models.go")
+	outDir := "../tmp"
+
+	if _, err := os.Stat(outDir); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+		os.Mkdir(outDir, 0755)
+	}
+
+	fp := filepath.Join(outDir, "models.go")
+
+	f, err := os.Create(fp)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,13 +44,28 @@ func TestGenModel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	f2, err := os.Create("funcs.go")
+	fp = filepath.Join(outDir, "funcs.go")
+
+	f2, err := os.Create(fp)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer f2.Close()
 
 	err = mg.GenFuncFile(f2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fp = filepath.Join(outDir, "funcs_test.go")
+
+	f3, err := os.Create(fp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f3.Close()
+
+	err = mg.GenTestFuncFile(f3)
 	if err != nil {
 		t.Fatal(err)
 	}

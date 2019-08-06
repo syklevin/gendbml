@@ -8,19 +8,33 @@ import (
 )
 
 type ModelGen struct {
-	Pkg    string
-	Cls    string
-	Models []*ModelInfo
-	Funcs  []*FuncInfo
+	Pkg          string
+	Cls          string
+	DataPkg      string
+	ErrorPkg     string
+	ErrorPkgName string
+	Models       []*ModelInfo
+	Funcs        []*FuncInfo
 }
 
-func NewModelGen(dbml *DBML, pkg string) *ModelGen {
+func NewModelGen(dbml *DBML, pkg, datapkg, dbName, errorPkg string) *ModelGen {
+	hasDataPkg := false
+	errorPkgList := strings.Split(errorPkg, "/")
+	errorpkgName := errorPkgList[len(errorPkgList)-1]
+
 	mg := &ModelGen{
-		Pkg:    pkg,
-		Cls:    dbml.Class,
-		Models: []*ModelInfo{},
-		Funcs:  []*FuncInfo{},
+		Pkg:          pkg,
+		Cls:          dbml.Class,
+		DataPkg:      datapkg,
+		ErrorPkg:     errorPkg,
+		ErrorPkgName: errorpkgName,
+		Models:       []*ModelInfo{},
+		Funcs:        []*FuncInfo{},
 	}
+	if mg.DataPkg != "" {
+		hasDataPkg = true
+	}
+
 	for _, fn := range dbml.Functions {
 		//input model
 		param := buildParamModel(fn)
@@ -28,7 +42,7 @@ func NewModelGen(dbml *DBML, pkg string) *ModelGen {
 		results := buildResultModels(fn)
 		mg.Models = append(mg.Models, results...)
 
-		spfn, err := buildFuncInfo(fn)
+		spfn, err := buildFuncInfo(fn, hasDataPkg, pkg, dbName)
 		if err != nil {
 			fmt.Println(err)
 			continue

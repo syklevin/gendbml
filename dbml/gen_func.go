@@ -6,14 +6,14 @@ import (
 )
 
 type FuncInfo struct {
-	Name    string
-	Inputs  []string
-	Returns []string
-	Body    string
+	Name        string
+	Inputs      []string
+	Returns     []string
+	FinalReturn string
+	Body        string
 }
 
-func buildFuncInfo(fn DBMLFunc) (*FuncInfo, error) {
-
+func buildFuncInfo(fn DBMLFunc, hasDataPkg bool, pkg, dbName string) (*FuncInfo, error) {
 	if len(fn.DBMLFuncElements) > 1 {
 		return nil, fmt.Errorf("not support gen multiple result set for %s", fn.Method)
 	}
@@ -22,7 +22,9 @@ func buildFuncInfo(fn DBMLFunc) (*FuncInfo, error) {
 	fi.Name = strings.Title(fn.Method)
 	fi.Inputs = []string{}
 	fi.Inputs = append(fi.Inputs, "ctx context.Context")
-	fi.Inputs = append(fi.Inputs, "db *sqlx.DB")
+	if !hasDataPkg {
+		fi.Inputs = append(fi.Inputs, "db *sqlx.DB")
+	}
 
 	if len(fn.Parameters) > 0 {
 		fi.Inputs = append(fi.Inputs, "param *"+fi.Name+"Param")
@@ -35,6 +37,9 @@ func buildFuncInfo(fn DBMLFunc) (*FuncInfo, error) {
 				if strings.Index(p.Name, "p") == 0 || strings.Index(p.Name, "w") == 0 {
 					fieldOut = p.Name[1:]
 				}
+				if fieldOut == "RtnCode" || fieldOut == "RtnMessage" {
+					continue
+				}
 				fieldOut = "out" + fieldOut
 				fieldType = csTypeToGoType(p.Type, false)
 				fieldOut = fieldOut + " *" + fieldType
@@ -43,20 +48,33 @@ func buildFuncInfo(fn DBMLFunc) (*FuncInfo, error) {
 		}
 	}
 
+	var body strings.Builder
 	fi.Returns = []string{}
 	if len(fn.DBMLFuncElements) == 1 {
 		el := fn.DBMLFuncElements[0]
-		fi.Returns = append(fi.Returns, fmt.Sprintf("rst []*%s", strings.Title(el.Name)))
+		fi.Returns = append(fi.Returns, fmt.Sprintf("[]*%s", strings.Title(el.Name)))
+		fi.FinalReturn = "&rst, "
+		body.WriteString("var rst []" + strings.Title(el.Name) + "{}\n\t")
 	}
 	fi.Returns = append(fi.Returns, "err error")
+	fi.FinalReturn += "checkError(err, errCode, errMsg)"
 
-	var body strings.Builder
 	var run string
-	if len(fn.DBMLFuncElements) == 0 {
-		run = fmt.Sprintf("_, err = db.ExecContext(ctx, \"%s\"", fn.Name)
-	} else { //len(fn.DBMLFuncElements) == 1
-		run = fmt.Sprintf("err = db.SelectContext(ctx, &rst, \"%s\"", fn.Name)
+
+	if hasDataPkg && len(dbName) > 0 {
+		if len(fn.DBMLFuncElements) == 0 {
+			run = fmt.Sprintf("_, err = "+pkg+"."+dbName+".ExecContext(ctx, \"%s\"", fn.Name)
+		} else { //len(fn.DBMLFuncElements) == 1
+			run = fmt.Sprintf("err = "+pkg+"."+dbName+".SelectContext(ctx, &rst, \"%s\"", fn.Name)
+		}
+	} else {
+		if len(fn.DBMLFuncElements) == 0 {
+			run = fmt.Sprintf("_, err = db.ExecContext(ctx, \"%s\"", fn.Name)
+		} else { //len(fn.DBMLFuncElements) == 1
+			run = fmt.Sprintf("err = db.SelectContext(ctx, &rst, \"%s\"", fn.Name)
+		}
 	}
+
 	body.WriteString(run)
 
 	var paramFiledName string
@@ -70,7 +88,7 @@ func buildFuncInfo(fn DBMLFunc) (*FuncInfo, error) {
 			paramFiledName = p.Name[1:]
 		}
 		paramFiledName = "param." + strings.Title(paramFiledName)
-		namedfield = fmt.Sprintf(", sql.Named(\"%s\", %s)", p.Name, paramFiledName)
+		namedfield = fmt.Sprintf("\n\t\t,sql.Named(\"%s\", %s)", p.Name, paramFiledName)
 		body.WriteString(namedfield)
 	}
 
@@ -80,13 +98,20 @@ func buildFuncInfo(fn DBMLFunc) (*FuncInfo, error) {
 			if strings.Index(p.Name, "p") == 0 || strings.Index(p.Name, "w") == 0 {
 				paramFiledName = p.Name[1:]
 			}
-			paramFiledName = "out" + strings.Title(paramFiledName)
-			namedfield = fmt.Sprintf(", sql.Named(\"%s\", sql.Out{Dest: %s})", p.Name, paramFiledName)
+
+			if paramFiledName == "RtnCode" {
+				paramFiledName = "&errCode"
+			} else if paramFiledName == "RtnMessage" {
+				paramFiledName = "&errMsg"
+			} else {
+				paramFiledName = "out" + strings.Title(paramFiledName)
+			}
+			namedfield = fmt.Sprintf("\n\t\t,sql.Named(\"%s\", sql.Out{Dest: %s})", p.Name, paramFiledName)
 			body.WriteString(namedfield)
 		}
 	}
 
-	body.WriteString(")")
+	body.WriteString("\n\t)")
 
 	fi.Body = body.String()
 

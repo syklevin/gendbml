@@ -13,7 +13,7 @@ type FuncInfo struct {
 	Body        string
 }
 
-func buildFuncInfo(fn DBMLFunc, hasDataPkg bool, pkg, dbName string) (*FuncInfo, error) {
+func buildFuncInfo(fn DBMLFunc, pkg, externalDB string) (*FuncInfo, error) {
 	if len(fn.DBMLFuncElements) > 1 {
 		return nil, fmt.Errorf("not support gen multiple result set for %s", fn.Method)
 	}
@@ -22,7 +22,7 @@ func buildFuncInfo(fn DBMLFunc, hasDataPkg bool, pkg, dbName string) (*FuncInfo,
 	fi.Name = strings.Title(fn.Method)
 	fi.Inputs = []string{}
 	fi.Inputs = append(fi.Inputs, "ctx context.Context")
-	if !hasDataPkg {
+	if len(externalDB) == 0 {
 		fi.Inputs = append(fi.Inputs, "db *sqlx.DB")
 	}
 
@@ -61,11 +61,11 @@ func buildFuncInfo(fn DBMLFunc, hasDataPkg bool, pkg, dbName string) (*FuncInfo,
 
 	var run string
 
-	if hasDataPkg && len(dbName) > 0 {
+	if len(externalDB) > 0 {
 		if len(fn.DBMLFuncElements) == 0 {
-			run = fmt.Sprintf("_, err = "+pkg+"."+dbName+".ExecContext(ctx, \"%s\"", fn.Name)
+			run = fmt.Sprintf("_, err = "+pkg+"."+externalDB+".ExecContext(ctx, \"%s\"", fn.Name)
 		} else { //len(fn.DBMLFuncElements) == 1
-			run = fmt.Sprintf("err = "+pkg+"."+dbName+".SelectContext(ctx, &rst, \"%s\"", fn.Name)
+			run = fmt.Sprintf("err = "+pkg+"."+externalDB+".SelectContext(ctx, &rst, \"%s\"", fn.Name)
 		}
 	} else {
 		if len(fn.DBMLFuncElements) == 0 {

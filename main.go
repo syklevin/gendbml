@@ -23,13 +23,13 @@ func main() {
 	var outDir string
 	var pkgName string
 	var dataPkg string
-	var dbName string
+	var externalDB string
 	var errorPkg string
 	flag.StringVar(&dbmlFile, "file", "", "dbml file for gen")
 	flag.StringVar(&pkgName, "pkg", "data", "output pkg namen")
 	flag.StringVar(&outDir, "dir", "", "output dir for gen")
 	flag.StringVar(&dataPkg, "datapkg", "", "pkg where singalten DB(s) appear")
-	flag.StringVar(&dbName, "dbName", "", "DB variable name used to call dB in data pkg")
+	flag.StringVar(&externalDB, "dbName", "", "DB variable name used to call dB in data pkg")
 	flag.StringVar(&errorPkg, "errorPkg", "", "pkg where custumized error to be used")
 	flag.Parse()
 
@@ -45,7 +45,7 @@ func main() {
 		die(err)
 	}
 
-	mg := dbml.NewModelGen(ml, pkgName, dataPkg, dbName, errorPkg)
+	mg := dbml.NewModelGen(ml, pkgName, dataPkg, externalDB, errorPkg)
 
 	if outDir == "" {
 		outDir = pkgName

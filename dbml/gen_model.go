@@ -17,8 +17,7 @@ type ModelGen struct {
 	Funcs        []*FuncInfo
 }
 
-func NewModelGen(dbml *DBML, pkg, datapkg, dbName, errorPkg string) *ModelGen {
-	hasDataPkg := false
+func NewModelGen(dbml *DBML, pkg, datapkg, externalDB, errorPkg string) *ModelGen {
 	errorPkgList := strings.Split(errorPkg, "/")
 	errorpkgName := errorPkgList[len(errorPkgList)-1]
 
@@ -31,9 +30,6 @@ func NewModelGen(dbml *DBML, pkg, datapkg, dbName, errorPkg string) *ModelGen {
 		Models:       []*ModelInfo{},
 		Funcs:        []*FuncInfo{},
 	}
-	if mg.DataPkg != "" {
-		hasDataPkg = true
-	}
 
 	for _, fn := range dbml.Functions {
 		//input model
@@ -42,7 +38,7 @@ func NewModelGen(dbml *DBML, pkg, datapkg, dbName, errorPkg string) *ModelGen {
 		results := buildResultModels(fn)
 		mg.Models = append(mg.Models, results...)
 
-		spfn, err := buildFuncInfo(fn, hasDataPkg, pkg, dbName)
+		spfn, err := buildFuncInfo(fn, pkg, externalDB)
 		if err != nil {
 			fmt.Println(err)
 			continue

@@ -63,15 +63,15 @@ func buildFuncInfo(fn DBMLFunc, dataPkgName, externalDB string) (*FuncInfo, erro
 
 	if len(externalDB) > 0 {
 		if len(fn.DBMLFuncElements) == 0 {
-			run = fmt.Sprintf("_, err = "+dataPkgName+"."+externalDB+".ExecContext(ctx, \"%s\",", fn.Name)
+			run = fmt.Sprintf("_, err := "+dataPkgName+"."+externalDB+".ExecContext(ctx, \"%s\",", fn.Name)
 		} else { //len(fn.DBMLFuncElements) == 1
-			run = fmt.Sprintf("err = "+dataPkgName+"."+externalDB+".SelectContext(ctx, &rst, \"%s\",", fn.Name)
+			run = fmt.Sprintf("err := "+dataPkgName+"."+externalDB+".SelectContext(ctx, &rst, \"%s\",", fn.Name)
 		}
 	} else {
 		if len(fn.DBMLFuncElements) == 0 {
-			run = fmt.Sprintf("_, err = db.ExecContext(ctx, \"%s\",", fn.Name)
+			run = fmt.Sprintf("_, err := db.ExecContext(ctx, \"%s\",", fn.Name)
 		} else { //len(fn.DBMLFuncElements) == 1
-			run = fmt.Sprintf("err = db.SelectContext(ctx, &rst, \"%s\",", fn.Name)
+			run = fmt.Sprintf("err := db.SelectContext(ctx, &rst, \"%s\",", fn.Name)
 		}
 	}
 
@@ -174,9 +174,9 @@ func buildTestFuncInfo(fn DBMLFunc) (*TestFuncInfo, error) {
 	var body strings.Builder
 	var run string
 	if len(fn.DBMLFuncElements) == 0 {
-		run = fmt.Sprintf("_, err = db.ExecContext(ctx, \"%s\"", fn.Name)
+		run = fmt.Sprintf("_, err := db.ExecContext(ctx, \"%s\"", fn.Name)
 	} else { //len(fn.DBMLFuncElements) == 1
-		run = fmt.Sprintf("err = db.SelectContext(ctx, &rst, \"%s\"", fn.Name)
+		run = fmt.Sprintf("err := db.SelectContext(ctx, &rst, \"%s\"", fn.Name)
 	}
 	body.WriteString(run)
 

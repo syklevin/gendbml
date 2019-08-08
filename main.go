@@ -84,4 +84,17 @@ func main() {
 	if err != nil {
 		die(err)
 	}
+
+	testfuncFile := filepath.Join(outDir, strings.ToLower(clsName)+"_funcs_test.go")
+	f3, err := os.Create(testfuncFile)
+	if err != nil {
+		die(err)
+	}
+	defer f3.Close()
+
+	err = mg.GenTestFuncFile(f3)
+	if err != nil {
+		die(err)
+	}
+
 }

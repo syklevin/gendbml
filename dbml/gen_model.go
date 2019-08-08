@@ -45,6 +45,13 @@ func NewModelGen(dbml *DBML, pkg, datapkg, externalDB, errorPkg string) *ModelGe
 		}
 		mg.Funcs = append(mg.Funcs, spfn)
 
+		tsfn, err := buildTestFuncInfo(fn)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		mg.TestFuncs = append(mg.TestFuncs, tsfn)
+
 	}
 
 	return mg
@@ -62,6 +69,15 @@ func (mg *ModelGen) GenModelFile(w io.Writer) error {
 
 func (mg *ModelGen) GenFuncFile(w io.Writer) error {
 	t, err := template.New("Funcs template").Parse(FuncTmpl)
+	if err != nil {
+		return err
+	}
+	err = t.Execute(w, mg)
+	return err
+}
+
+func (mg *ModelGen) GenTestFuncFile(w io.Writer) error {
+	t, err := template.New("Test Funcs template").Parse(TestFuncTmpl)
 	if err != nil {
 		return err
 	}

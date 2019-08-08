@@ -13,7 +13,7 @@ type FuncInfo struct {
 	Body        string
 }
 
-func buildFuncInfo(fn DBMLFunc, pkg, externalDB string) (*FuncInfo, error) {
+func buildFuncInfo(fn DBMLFunc, dataPkgName, externalDB string) (*FuncInfo, error) {
 	if len(fn.DBMLFuncElements) > 1 {
 		return nil, fmt.Errorf("not support gen multiple result set for %s", fn.Method)
 	}
@@ -53,25 +53,25 @@ func buildFuncInfo(fn DBMLFunc, pkg, externalDB string) (*FuncInfo, error) {
 	if len(fn.DBMLFuncElements) == 1 {
 		el := fn.DBMLFuncElements[0]
 		fi.Returns = append(fi.Returns, fmt.Sprintf("[]*%s", strings.Title(el.Name)))
-		fi.FinalReturn = "&rst, "
-		body.WriteString("var rst []" + strings.Title(el.Name) + "{}\n\t")
+		fi.FinalReturn = "rst, "
+		body.WriteString("rst := []" + strings.Title(el.Name) + "{}\n\t")
 	}
-	fi.Returns = append(fi.Returns, "err error")
+	fi.Returns = append(fi.Returns, "error")
 	fi.FinalReturn += "checkError(err, errCode, errMsg)"
 
 	var run string
 
 	if len(externalDB) > 0 {
 		if len(fn.DBMLFuncElements) == 0 {
-			run = fmt.Sprintf("_, err = "+pkg+"."+externalDB+".ExecContext(ctx, \"%s\"", fn.Name)
+			run = fmt.Sprintf("_, err = "+dataPkgName+"."+externalDB+".ExecContext(ctx, \"%s\",", fn.Name)
 		} else { //len(fn.DBMLFuncElements) == 1
-			run = fmt.Sprintf("err = "+pkg+"."+externalDB+".SelectContext(ctx, &rst, \"%s\"", fn.Name)
+			run = fmt.Sprintf("err = "+dataPkgName+"."+externalDB+".SelectContext(ctx, &rst, \"%s\",", fn.Name)
 		}
 	} else {
 		if len(fn.DBMLFuncElements) == 0 {
-			run = fmt.Sprintf("_, err = db.ExecContext(ctx, \"%s\"", fn.Name)
+			run = fmt.Sprintf("_, err = db.ExecContext(ctx, \"%s\",", fn.Name)
 		} else { //len(fn.DBMLFuncElements) == 1
-			run = fmt.Sprintf("err = db.SelectContext(ctx, &rst, \"%s\"", fn.Name)
+			run = fmt.Sprintf("err = db.SelectContext(ctx, &rst, \"%s\",", fn.Name)
 		}
 	}
 
@@ -88,7 +88,7 @@ func buildFuncInfo(fn DBMLFunc, pkg, externalDB string) (*FuncInfo, error) {
 			paramFiledName = p.Name[1:]
 		}
 		paramFiledName = "param." + strings.Title(paramFiledName)
-		namedfield = fmt.Sprintf("\n\t\t,sql.Named(\"%s\", %s)", p.Name, paramFiledName)
+		namedfield = fmt.Sprintf("\n\t\tsql.Named(\"%s\", %s),", p.Name, paramFiledName)
 		body.WriteString(namedfield)
 	}
 
@@ -106,7 +106,7 @@ func buildFuncInfo(fn DBMLFunc, pkg, externalDB string) (*FuncInfo, error) {
 			} else {
 				paramFiledName = "out" + strings.Title(paramFiledName)
 			}
-			namedfield = fmt.Sprintf("\n\t\t,sql.Named(\"%s\", sql.Out{Dest: %s})", p.Name, paramFiledName)
+			namedfield = fmt.Sprintf("\n\t\tsql.Named(\"%s\", sql.Out{Dest: %s}),", p.Name, paramFiledName)
 			body.WriteString(namedfield)
 		}
 	}
@@ -191,7 +191,7 @@ func buildTestFuncInfo(fn DBMLFunc) (*TestFuncInfo, error) {
 			paramFiledName = p.Name[1:]
 		}
 		paramFiledName = "param." + strings.Title(paramFiledName)
-		namedfield = fmt.Sprintf(", sql.Named(\"%s\", %s)", p.Name, paramFiledName)
+		namedfield = fmt.Sprintf("\n\t\tsql.Named(\"%s\", %s),", p.Name, paramFiledName)
 		body.WriteString(namedfield)
 	}
 
@@ -202,7 +202,7 @@ func buildTestFuncInfo(fn DBMLFunc) (*TestFuncInfo, error) {
 				paramFiledName = p.Name[1:]
 			}
 			paramFiledName = "out" + strings.Title(paramFiledName)
-			namedfield = fmt.Sprintf(", sql.Named(\"%s\", sql.Out{Dest: %s})", p.Name, paramFiledName)
+			namedfield = fmt.Sprintf("\n\t\tsql.Named(\"%s\", sql.Out{Dest: %s}),", p.Name, paramFiledName)
 			body.WriteString(namedfield)
 		}
 	}

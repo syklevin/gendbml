@@ -19,6 +19,9 @@ type ModelGen struct {
 }
 
 func NewModelGen(dbml *DBML, pkg, datapkg, externalDB, errorPkg string) *ModelGen {
+	dataPkgList := strings.Split(datapkg, "/")
+	dataPkgName := dataPkgList[len(dataPkgList)-1]
+
 	errorPkgList := strings.Split(errorPkg, "/")
 	errorpkgName := errorPkgList[len(errorPkgList)-1]
 
@@ -39,7 +42,7 @@ func NewModelGen(dbml *DBML, pkg, datapkg, externalDB, errorPkg string) *ModelGe
 		results := buildResultModels(fn)
 		mg.Models = append(mg.Models, results...)
 
-		spfn, err := buildFuncInfo(fn, pkg, externalDB)
+		spfn, err := buildFuncInfo(fn, dataPkgName, externalDB)
 		if err != nil {
 			fmt.Println(err)
 			continue

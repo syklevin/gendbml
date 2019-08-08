@@ -22,7 +22,7 @@ func TestGenModel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mg := NewModelGen(dbml, "data", "github.acsdev.net/helios/zeus/pkg/data", "GameClub", "github.acsdev.net/helios/zeus/pkg/errors")
+	mg := NewModelGen(dbml, "gameclub", "github.acsdev.net/helios/zeus/pkg/data", "GameClub", "github.acsdev.net/helios/zeus/pkg/errors")
 
 	outDir := "../tmp"
 

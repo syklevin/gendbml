@@ -15,6 +15,7 @@ type ModelGen struct {
 	ErrorPkgName string
 	Models       []*ModelInfo
 	Funcs        []*FuncInfo
+	TestFuncs    []*TestFuncInfo
 }
 
 func NewModelGen(dbml *DBML, pkg, datapkg, externalDB, errorPkg string) *ModelGen {

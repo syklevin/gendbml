@@ -30,6 +30,9 @@ import (
     "context"
     "database/sql"
     "github.com/jmoiron/sqlx"
+    
+    {{if .DataPkg}}"{{.DataPkg}}" {{end}}
+    {{if .ErrorPkg}}"{{.ErrorPkg}}" {{end}}
 )
 
 
@@ -39,6 +42,16 @@ var (
     _ = sqlx.DB{}
 )
 
+func checkError(err error, errCode int32, errMsg string) error {
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if errCode != 0 {
+		return {{.ErrorPkgName}}.Coded(int(errCode), errMsg)
+	}
+	return err
+}
+
 {{range .Funcs}}
 func {{.Name}}(
     {{- range $i, $e := .Inputs -}}
@@ -47,8 +60,11 @@ func {{.Name}}(
     {{- range $j, $k := .Returns -}}
         {{if $j}}, {{end}}{{$k}}
     {{- end}}) {
+    var errCode int32
+    var errMsg string
+
     {{.Body}}
-    return
+    return {{.FinalReturn}}
 }
 {{end}}
 

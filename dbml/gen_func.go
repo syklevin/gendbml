@@ -138,9 +138,8 @@ func buildTestFuncInfo(fn DBMLFunc) (*TestFuncInfo, error) {
 	fi.Declares = []string{}
 	fi.Arguments = []string{}
 
-	fi.Declares = append(fi.Declares, "var db = db_")
 	fi.Declares = append(fi.Declares, "var ctx = context.Background()")
-	fi.Arguments = append(fi.Arguments, "ctx", "db")
+	fi.Arguments = append(fi.Arguments, "ctx")
 
 	if len(fn.Parameters) > 0 {
 		fi.Declares = append(fi.Declares, "var param = &"+fi.Name+"Param{}")

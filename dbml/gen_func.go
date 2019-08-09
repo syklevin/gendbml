@@ -54,7 +54,7 @@ func buildFuncInfo(fn DBMLFunc, dataPkgName, externalDB string) (*FuncInfo, erro
 		el := fn.DBMLFuncElements[0]
 		fi.Returns = append(fi.Returns, fmt.Sprintf("[]*%s", strings.Title(el.Name)))
 		fi.FinalReturn = "rst, "
-		body.WriteString("rst := []" + strings.Title(el.Name) + "{}\n\t")
+		body.WriteString("rst := []*" + strings.Title(el.Name) + "{}\n\t")
 	}
 	fi.Returns = append(fi.Returns, "error")
 	fi.FinalReturn += "checkError(err, errCode, errMsg)"

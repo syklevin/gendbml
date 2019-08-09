@@ -57,10 +57,13 @@ var (
 func {{.Name}}(
     {{- range $i, $e := .Inputs -}}
         {{if $i}}, {{end}}{{$e}}
-    {{- end}}) (
+    {{- end}}
+    {{- $length := len .Returns}}
+        {{- if gt $length 1}}) ({{else}}) {{end}}
     {{- range $j, $k := .Returns -}}
         {{if $j}}, {{end}}{{$k}}
-    {{- end}}) {
+    {{- end}}
+    {{- if gt $length 1}}) { {{- else}} { {{- end}}
     var errCode int32
     var errMsg string
 

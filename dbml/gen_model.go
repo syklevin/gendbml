@@ -120,7 +120,7 @@ func genParamModelFields(params []DBMLFuncParam) []string {
 		if p.Direction == "Out" || p.Direction == "InOut" {
 			continue
 		}
-		if strings.Index(p.Name, "p") == 0 {
+		if strings.Index(p.Name, "p") == 0 || strings.Index(p.Name, "w") == 0 {
 			field = p.Name[1:]
 		} else {
 			field = p.Name

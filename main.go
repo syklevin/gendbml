@@ -9,8 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/NatalieACS/gendbml/dbml"
-	//"github.com/syklevin/gendbml/dbml"
+	"github.com/syklevin/gendbml/dbml"
 )
 
 func die(v ...interface{}) {

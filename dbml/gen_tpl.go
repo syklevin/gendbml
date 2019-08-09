@@ -50,8 +50,7 @@ var (
 		return {{.ErrorPkgName}}.Coded(int(errCode), errMsg)
 	}
 	return err
-}
-{{end}}
+}{{end}}
 
 {{range .Funcs}}
 func {{.Name}}(

@@ -3,6 +3,7 @@ package dbml
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 	"text/template"
 )
@@ -18,12 +19,17 @@ type ModelGen struct {
 	TestFuncs    []*TestFuncInfo
 }
 
-func NewModelGen(dbml *DBML, pkg, datapkg, externalDB, errorPkg string) *ModelGen {
+func NewModelGen(dbml *DBML, outDir, pkg, datapkg, externalDB, errorPkg string) *ModelGen {
 	dataPkgList := strings.Split(datapkg, "/")
 	dataPkgName := dataPkgList[len(dataPkgList)-1]
 
 	errorPkgList := strings.Split(errorPkg, "/")
 	errorpkgName := errorPkgList[len(errorPkgList)-1]
+
+	list, err := filepath.Glob(outDir + "/*funcs.go")
+	if err == nil && len(list) > 0 {
+		errorpkgName = ""
+	}
 
 	mg := &ModelGen{
 		Pkg:          pkg,

@@ -45,7 +45,7 @@ func main() {
 		die(err)
 	}
 
-	mg := dbml.NewModelGen(ml, pkgName, dataPkg, externalDB, errorPkg)
+	mg := dbml.NewModelGen(ml, outDir, pkgName, dataPkg, externalDB, errorPkg)
 
 	if outDir == "" {
 		outDir = pkgName

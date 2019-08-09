@@ -153,6 +153,11 @@ func buildTestFuncInfo(fn DBMLFunc) (*TestFuncInfo, error) {
 				if strings.Index(p.Name, "p") == 0 || strings.Index(p.Name, "w") == 0 {
 					fieldOut = p.Name[1:]
 				}
+
+				if fieldOut == "RtnCode" || fieldOut == "RtnMessage" {
+					continue
+				}
+
 				fieldOut = "out" + fieldOut
 				fieldType = csTypeToGoType(p.Type, false)
 				fi.Declares = append(fi.Declares, "var "+fieldOut+" "+fieldType)

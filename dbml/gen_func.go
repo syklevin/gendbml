@@ -37,7 +37,7 @@ func buildFuncInfo(fn DBMLFunc, dataPkgName, externalDB string) (*FuncInfo, erro
 				if strings.Index(p.Name, "p") == 0 || strings.Index(p.Name, "w") == 0 {
 					fieldOut = p.Name[1:]
 				}
-				if fieldOut == "RtnCode" || fieldOut == "RtnMessage" {
+				if fieldOut == "RtnCode" || fieldOut == "RtnMessage" || fieldOut == "RtnMesssage" || fieldOut == "ErrMessage" {
 					continue
 				}
 				fieldOut = "out" + fieldOut
@@ -101,7 +101,7 @@ func buildFuncInfo(fn DBMLFunc, dataPkgName, externalDB string) (*FuncInfo, erro
 
 			if paramFiledName == "RtnCode" {
 				paramFiledName = "&errCode"
-			} else if paramFiledName == "RtnMessage" {
+			} else if paramFiledName == "RtnMessage" || paramFiledName == "RtnMesssage" || paramFiledName == "ErrMessage" {
 				paramFiledName = "&errMsg"
 			} else {
 				paramFiledName = "out" + strings.Title(paramFiledName)
@@ -154,7 +154,7 @@ func buildTestFuncInfo(fn DBMLFunc) (*TestFuncInfo, error) {
 					fieldOut = p.Name[1:]
 				}
 
-				if fieldOut == "RtnCode" || fieldOut == "RtnMessage" {
+				if fieldOut == "RtnCode" || fieldOut == "RtnMessage" || fieldOut == "RtnMesssage" || fieldOut == "ErrMessage" {
 					continue
 				}
 

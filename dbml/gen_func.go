@@ -19,7 +19,7 @@ func buildFuncInfo(fn DBMLFunc, dataPkgName, externalDB string) (*FuncInfo, erro
 	}
 
 	fi := &FuncInfo{}
-	fi.Name = strings.Title(fn.Method)
+	fi.Name = strings.Title(strings.ReplaceAll(fn.Name, ".", ""))
 	fi.Inputs = []string{}
 	fi.Inputs = append(fi.Inputs, "ctx context.Context")
 	if len(externalDB) == 0 {

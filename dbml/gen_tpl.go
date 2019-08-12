@@ -42,7 +42,7 @@ var (
     _ = sqlx.DB{}
 )
 
-func checkError(err error, errCode int32, errMsg string) error {
+{{if .ErrorPkgName}}func checkError(err error, errCode int32, errMsg string) error {
 	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
@@ -50,16 +50,19 @@ func checkError(err error, errCode int32, errMsg string) error {
 		return {{.ErrorPkgName}}.Coded(int(errCode), errMsg)
 	}
 	return err
-}
+}{{end}}
 
 {{range .Funcs}}
 func {{.Name}}(
     {{- range $i, $e := .Inputs -}}
         {{if $i}}, {{end}}{{$e}}
-    {{- end}}) (
+    {{- end}}
+    {{- $length := len .Returns}}
+        {{- if gt $length 1}}) ({{else}}) {{end}}
     {{- range $j, $k := .Returns -}}
         {{if $j}}, {{end}}{{$k}}
-    {{- end}}) {
+    {{- end}}
+    {{- if gt $length 1}}) { {{- else}} { {{- end}}
     var errCode int32
     var errMsg string
 

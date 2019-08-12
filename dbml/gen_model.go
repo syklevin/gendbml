@@ -3,6 +3,7 @@ package dbml
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 	"text/template"
 )
@@ -18,9 +19,17 @@ type ModelGen struct {
 	TestFuncs    []*TestFuncInfo
 }
 
-func NewModelGen(dbml *DBML, pkg, datapkg, externalDB, errorPkg string) *ModelGen {
+func NewModelGen(dbml *DBML, outDir, pkg, datapkg, externalDB, errorPkg string) *ModelGen {
+	dataPkgList := strings.Split(datapkg, "/")
+	dataPkgName := dataPkgList[len(dataPkgList)-1]
+
 	errorPkgList := strings.Split(errorPkg, "/")
 	errorpkgName := errorPkgList[len(errorPkgList)-1]
+
+	list, err := filepath.Glob(outDir + "/*funcs.go")
+	if err == nil && len(list) > 0 {
+		errorpkgName = ""
+	}
 
 	mg := &ModelGen{
 		Pkg:          pkg,
@@ -39,7 +48,7 @@ func NewModelGen(dbml *DBML, pkg, datapkg, externalDB, errorPkg string) *ModelGe
 		results := buildResultModels(fn)
 		mg.Models = append(mg.Models, results...)
 
-		spfn, err := buildFuncInfo(fn, pkg, externalDB)
+		spfn, err := buildFuncInfo(fn, dataPkgName, externalDB)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -117,7 +126,7 @@ func genParamModelFields(params []DBMLFuncParam) []string {
 		if p.Direction == "Out" || p.Direction == "InOut" {
 			continue
 		}
-		if strings.Index(p.Name, "p") == 0 {
+		if strings.Index(p.Name, "p") == 0 || strings.Index(p.Name, "w") == 0 {
 			field = p.Name[1:]
 		} else {
 			field = p.Name

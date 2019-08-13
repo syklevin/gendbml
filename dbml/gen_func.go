@@ -134,7 +134,7 @@ func buildTestFuncInfo(fn DBMLFunc) (*TestFuncInfo, error) {
 	}
 
 	fi := &TestFuncInfo{}
-	fi.Name = strings.Title(fn.Method)
+	fi.Name = strings.Title(strings.ReplaceAll(fn.Name, ".", ""))
 	fi.Declares = []string{}
 	fi.Arguments = []string{}
 

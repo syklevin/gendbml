@@ -18,8 +18,12 @@ func buildFuncInfo(fn DBMLFunc, dataPkgName, externalDB string) (*FuncInfo, erro
 		return nil, fmt.Errorf("not support gen multiple result set for %s", fn.Method)
 	}
 
+	SPComponent := strings.Split(fn.Name, ".")
+	SPSchema := SPComponent[0]
+	SPName := SPComponent[1]
+
 	fi := &FuncInfo{}
-	fi.Name = strings.Title(fn.Method)
+	fi.Name = strings.Title(SPSchema + SPName)
 	fi.Inputs = []string{}
 	fi.Inputs = append(fi.Inputs, "ctx context.Context")
 	if len(externalDB) == 0 {
@@ -37,7 +41,7 @@ func buildFuncInfo(fn DBMLFunc, dataPkgName, externalDB string) (*FuncInfo, erro
 				if strings.Index(p.Name, "p") == 0 || strings.Index(p.Name, "w") == 0 {
 					fieldOut = p.Name[1:]
 				}
-				if fieldOut == "RtnCode" || fieldOut == "RtnMessage" {
+				if fieldOut == "RtnCode" || fieldOut == "RtnMessage" || fieldOut == "RtnMesssage" || fieldOut == "ErrMessage" {
 					continue
 				}
 				fieldOut = "out" + fieldOut
@@ -52,9 +56,9 @@ func buildFuncInfo(fn DBMLFunc, dataPkgName, externalDB string) (*FuncInfo, erro
 	fi.Returns = []string{}
 	if len(fn.DBMLFuncElements) == 1 {
 		el := fn.DBMLFuncElements[0]
-		fi.Returns = append(fi.Returns, fmt.Sprintf("[]*%s", strings.Title(el.Name)))
+		fi.Returns = append(fi.Returns, fmt.Sprintf("[]*%s", strings.Title(SPSchema+el.Name)))
 		fi.FinalReturn = "rst, "
-		body.WriteString("rst := []*" + strings.Title(el.Name) + "{}\n\t")
+		body.WriteString("rst := []*" + strings.Title(SPSchema+el.Name) + "{}\n\t")
 	}
 	fi.Returns = append(fi.Returns, "error")
 	fi.FinalReturn += "checkError(err, errCode, errMsg)"
@@ -101,7 +105,7 @@ func buildFuncInfo(fn DBMLFunc, dataPkgName, externalDB string) (*FuncInfo, erro
 
 			if paramFiledName == "RtnCode" {
 				paramFiledName = "&errCode"
-			} else if paramFiledName == "RtnMessage" {
+			} else if paramFiledName == "RtnMessage" || paramFiledName == "RtnMesssage" || paramFiledName == "ErrMessage" {
 				paramFiledName = "&errMsg"
 			} else {
 				paramFiledName = "out" + strings.Title(paramFiledName)
@@ -128,13 +132,16 @@ type TestFuncInfo struct {
 }
 
 func buildTestFuncInfo(fn DBMLFunc) (*TestFuncInfo, error) {
-
 	if len(fn.DBMLFuncElements) > 1 {
 		return nil, fmt.Errorf("not support gen multiple result set for %s", fn.Method)
 	}
 
+	SPComponent := strings.Split(fn.Name, ".")
+	SPSchema := SPComponent[0]
+	SPName := SPComponent[1]
+
 	fi := &TestFuncInfo{}
-	fi.Name = strings.Title(fn.Method)
+	fi.Name = strings.Title(SPSchema + SPName)
 	fi.Declares = []string{}
 	fi.Arguments = []string{}
 
@@ -154,7 +161,7 @@ func buildTestFuncInfo(fn DBMLFunc) (*TestFuncInfo, error) {
 					fieldOut = p.Name[1:]
 				}
 
-				if fieldOut == "RtnCode" || fieldOut == "RtnMessage" {
+				if fieldOut == "RtnCode" || fieldOut == "RtnMessage" || fieldOut == "RtnMesssage" || fieldOut == "ErrMessage" {
 					continue
 				}
 
@@ -169,7 +176,7 @@ func buildTestFuncInfo(fn DBMLFunc) (*TestFuncInfo, error) {
 	fi.Returns = []string{}
 	if len(fn.DBMLFuncElements) == 1 {
 		el := fn.DBMLFuncElements[0]
-		fi.Declares = append(fi.Declares, fmt.Sprintf("var rst = []*%s{}", strings.Title(el.Name)))
+		fi.Declares = append(fi.Declares, fmt.Sprintf("var rst = []*%s{}", strings.Title(SPSchema+el.Name)))
 		fi.Returns = append(fi.Returns, "rst")
 	}
 	fi.Declares = append(fi.Declares, "var err error")

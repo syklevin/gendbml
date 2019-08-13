@@ -102,16 +102,17 @@ type ModelInfo struct {
 
 func buildParamModel(fn DBMLFunc) *ModelInfo {
 	mi := &ModelInfo{}
-	mi.Name = strings.Title(fn.Method) + "Param"
+	mi.Name = strings.Title(strings.ReplaceAll(fn.Name, ".", "")) + "Param"
 	mi.Fields = genParamModelFields(fn.Parameters)
 	return mi
 }
 
 func buildResultModels(fn DBMLFunc) []*ModelInfo {
 	ret := []*ModelInfo{}
+	SPSchema := strings.Split(fn.Name, ".")[0]
 	for _, el := range fn.DBMLFuncElements {
 		mi := &ModelInfo{}
-		mi.Name = strings.Title(el.Name)
+		mi.Name = strings.Title(SPSchema + el.Name)
 		mi.Fields = genResultModelFields(el.Columns)
 		ret = append(ret, mi)
 	}
